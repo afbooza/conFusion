@@ -10,5 +10,5 @@ body {
 .container {
 	margin: 20px;
 	display: flex;
-	text-align: left;
+	/*text-align: left;*/
 }
