@@ -27,6 +27,7 @@ export class DishService {
   }
 
   getDishIds(): Observable<number[]> {
+    //map returns an array
     return Observable.of(DISHES.map(dish => dish.id)).delay(2000);
   }
 
