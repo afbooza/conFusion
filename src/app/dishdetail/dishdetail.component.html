@@ -4,7 +4,8 @@
     fxLayout.xs="column"
     fxLayoutAlign.gt-md="space-around center"
     fxLayoutGap="10px" 
-    fxLayoutGap.xs="0">
+    fxLayoutGap.xs="0"
+    *ngIf="dish">
 
   <div fxFlex="40">
     <md-card *ngIf="dish">
@@ -44,4 +45,7 @@
       </md-card>
   </div>
 
+</div>
+<div [hidden]="dish">
+  <md-spinner></md-spinner> <h4>Loading...Please Wait</h4>
 </div>
