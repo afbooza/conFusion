@@ -49,7 +49,7 @@
             </md-list-item>
 
             <md-list-item *ngIf="commentForm.valid">
-              <p md-line><span>{{commentForm.value.comment}}</span></p>
+              <p md-line><span>{{commentForm.controls.comment.value}}</span></p>
               <br>
               <p md-line><span>{{commentForm.value.rating}} Stars</span></p>
               <br>
