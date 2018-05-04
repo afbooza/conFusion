@@ -6,6 +6,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Dish } from '../shared/dish';
 import { DishService } from '../services/dish.service';
 import 'rxjs/add/operator/switchMap';
+import { Comment } from '../shared/comment';
 
 @Component({
   selector: 'app-dishdetail',
@@ -15,16 +16,18 @@ import 'rxjs/add/operator/switchMap';
 export class DishdetailComponent implements OnInit {
 
   commentForm:FormGroup;
+  comment: Comment;
   dish: Dish;
   dishIds: number[];
   prev: number;
   next: number;
   formErrors = {
-    'name':''
+    'author':'',
+    'comment':''
   }
 
   validationcomments = {
-    'name': {
+    'author': {
       'required': 'Name is required',
       'minlength': 'Name must be at least 2 characters long'
     } ,
@@ -50,10 +53,23 @@ export class DishdetailComponent implements OnInit {
       .subscribe(dish => { this.dish = dish; this.setPrevNext(dish.id) }); 
   }
 
+  onSubmit() {
+    this.comment = this.commentForm.value;
+    this.dish.comments.push(this.comment);
+    this.commentForm.reset({
+      author:'',
+      rating:'5',
+      comment:'',
+      date:new Date().toISOString()
+    });
+  }
+
   createForm() {
     this.commentForm = this.fb.group({
-      name: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(25)]], 
-      comment: ''
+      author: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(25)]], 
+      comment: ['', [Validators.required]],
+      rating:'5',
+      date: new Date().toISOString()
     });
 
     this.commentForm.valueChanges
