@@ -25,6 +25,7 @@ export class DishdetailComponent implements OnInit {
     'author':'',
     'comment':''
   }
+  errMess: string;
 
   validationcomments = {
     'author': {
@@ -51,7 +52,8 @@ export class DishdetailComponent implements OnInit {
     //+this.route.snapshot.params['id'] - taking an snapshot of the route at that moment in time
     this.route.params
       .switchMap((params: Params) => this.dishservice.getDish(+params['id']))
-      .subscribe(dish => { this.dish = dish; this.setPrevNext(dish.id) }); 
+      .subscribe(dish => { this.dish = dish; this.setPrevNext(dish.id) },
+                  errmess => this.errMess = errmess); 
   }
 
   onSubmit() {
