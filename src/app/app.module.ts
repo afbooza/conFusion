@@ -30,6 +30,7 @@ import { LoginComponent } from './login/login.component';
 
 import {baseURL} from './shared/baseurl';
 import { ProcessHttpmsgService } from './services/process-httpmsg.service';
+import { HighlightDirective } from './directives/highlight.directive';
 
 
 
@@ -44,6 +45,7 @@ import { ProcessHttpmsgService } from './services/process-httpmsg.service';
     ContactComponent,
     HomeComponent,
     LoginComponent,
+    HighlightDirective,
   ],
   imports: [
     BrowserModule,
