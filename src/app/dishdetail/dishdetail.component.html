@@ -7,7 +7,7 @@
     fxLayoutGap.xs="0"
     *ngIf="dish">
 
-  <div fxFlex="40" *ngIf="dish">
+  <div fxFlex="40" *ngIf="dish" [@visibility]="visibility">
     <md-card >
       <md-card-header>
         <h3>{{dish.name | uppercase}}</h3>
@@ -31,7 +31,7 @@
     </md-card>
   </div>
 
-  <div fxFlex="40" *ngIf="dish">
+  <div fxFlex="40" *ngIf="dish" [@visibility]="visibility">
       <md-card >
         
         <md-card-header>
