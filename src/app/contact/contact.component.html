@@ -36,7 +36,7 @@
         </div>
       </div>
 
-      <div fxFlex fxFlexOffset="20px" class="form-size">
+      <div fxFlex fxFlexOffset="20px" class="form-size" [@expand]>
         <h3>Send us your Feedback</h3>
         <p>{{ feedbackForm.untouched | json }}{{ feedbackForm.value | json }} {{ feedbackForm.status | json }} {{ feedbackForm.pristine | json }}</p>
 

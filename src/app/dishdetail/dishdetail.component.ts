@@ -1,131 +1,146 @@
 import { Component, OnInit, Inject} from '@angular/core';
+import { FormBuilder, FormGroup, Validators } from "@angular/forms";
+
 import { Params, ActivatedRoute } from '@angular/router';
 import { Location } from '@angular/common';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { visibility, flyInOut, expand } from '../animations/app.animation';
 
 import { Dish } from '../shared/dish';
 import { DishService } from '../services/dish.service';
-import 'rxjs/add/operator/switchMap';
 import { Comment } from '../shared/comment';
-import {trigger, state, style, animate, transition } from '@angular/animations';
+
+import 'rxjs/add/operator/switchMap'; 
 
 @Component({
   selector: 'app-dishdetail',
   templateUrl: './dishdetail.component.html',
   styleUrls: ['./dishdetail.component.scss'],
+  host: {
+	'[@flyInOut]': 'true',
+	'style': 'display: block;'
+  },
   animations: [
-    trigger('visibility', [
-        state('shown', style({
-            transform: 'scale(1.0)',
-            opacity: 1
-        })),
-        state('hidden', style({
-            transform: 'scale(0.5)',
-            opacity: 0
-        })),
-        transition('* => *', animate('1.0s ease-in-out'))
-    ])
+	flyInOut(),
+	visibility(),
+	expand()
   ]
 })
-export class DishdetailComponent implements OnInit {
 
-  commentForm:FormGroup;
+export class DishdetailComponent implements OnInit {
+  dishdetailForm: FormGroup;
   comment: Comment;
-  dish: Dish;
-  dishcopy = null;
+  dish: Dish;  
+  dishcopy = null;  /* variable to hold returned Restangular Object */
+  array_copy = null;
   dishIds: number[];
   prev: number;
   next: number;
-
-  visibility = 'shown';
-
-  formErrors = {
-    'author':'',
-    'comment':''
-  }
   errMess: string;
-
-  validationcomments = {
-    'author': {
-      'required': 'Name is required',
-      'minlength': 'Name must be at least 2 characters long'
-    } ,
-    'comment':{
-      'required':'Comment is required'
-    }
-  }
+  visibility = 'shown';
   
-  constructor(private dishservice: DishService,
-    private route: ActivatedRoute,
-    private location: Location,
-    @Inject("BaseURL") private BaseURL,
-    private fb: FormBuilder) {
-      this.createForm()
-     }
+   
+/* Assignment 3 */
+  formErrors = {
+	'author': '',
+	'comment': ''
+  };
+  
+  validationMessages = {  /* see angular.io for more on in-code Form Validation pattern */
+	'author': {
+		'required': 'Author is Required.',
+		'minlength': 'Author name must be at least 2 characters long',
+		'maxlength': 'Author name cannot be more than 25 characters long'
+	},
+	'comment': {
+		'required': 'Comment is Required.',
+		'minlength': 'Comment must be at least 2 characters'
+	}
+  };
 
-  ngOnInit() {
-    this.dishservice
-      .getDishIds()
+ 	constructor(private dishservice: DishService,
+                private location: Location,
+                private route: ActivatedRoute, 
+				private fb: FormBuilder,
+				@Inject('BaseURL') private BaseURL) {
+				this.createForm();	
+			    }	
+			  
+/* End Assignment 3 */
+
+  /* Fetch the specific dish that was selected */
+ ngOnInit() {
+    this.dishservice.getDishIds()
       .subscribe(dishIds => this.dishIds = dishIds);
-    //+this.route.snapshot.params['id'] - taking an snapshot of the route at that moment in time
+
     this.route.params
-      .switchMap((params: Params) => { this.visibility = 'hidden'; return this.dishservice.getDish(+params['id']); })
-      .subscribe(dish => { this.dish = dish; this.dishcopy = dish; this.setPrevNext(dish.id); this.visibility = 'shown'; },
-          errmess => { this.dish = null; this.errMess = <any>errmess; }); 
-  }
-
-  onSubmit() {
-    this.comment = this.commentForm.value;
-    this.dishcopy.comments.push(this.comment);
-    this.dishcopy.save()
-      .subscribe(dish => this.dish = dish);
-    this.commentForm.reset({
-      author:'',
-      rating:'5',
-      comment:'',
-      date:new Date().toISOString()
-    });
-  }
-
-  createForm() {
-    this.commentForm = this.fb.group({
-      author: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(25)]], 
-      comment: ['', [Validators.required]],
-      rating:'5',
-      date: new Date().toISOString()
-    });
-
-    this.commentForm.valueChanges
-      .subscribe(data => this.onValueChanged(data));
-
-    this.onValueChanged(); // (re)set form validation comments
-  }
-
-  onValueChanged(data? :any)
-  {
-    if(!this.commentForm){ return;}
-    
-    const form = this.commentForm;
-    for (const field in this.formErrors){
-      this.formErrors[field] = '';
-      const control = form.get(field);
-      if(control && control.dirty && !control.valid){
-        const comments = this.validationcomments[field];
-        for(const key in control.errors){
-          this.formErrors[field] += comments[key] + ' ';
-        }
-      }
-    }
-  }
-
+      .switchMap((params: Params) => { this.visibility = 'hidden'; return this.dishservice.getDish(+params['id']); }) /* +params converts string value of 'id' to integer */
+      .subscribe(dish => {
+        this.dish = dish;
+		this.dishcopy = dish;
+        this.array_copy = dish;
+        this.setPrevNext(dish.id);
+		this.visibility = 'shown';
+      }, errmsg => this.errMess = <any>errmsg);
+ 
+	
+		}
+  
   setPrevNext(dishId: number) {
-    let index = this.dishIds.indexOf(dishId);
-    this.prev = this.dishIds[(this.dishIds.length + index - 1)%this.dishIds.length];
-    this.next = this.dishIds[(this.dishIds.length + index + 1)%this.dishIds.length];
+	  let index = this.dishIds.indexOf(dishId);
+	  this.prev = this.dishIds[(this.dishIds.length + index - 1)%this.dishIds.length]; /* wrap to last array index if currently [0] */
+	  this.next = this.dishIds[(this.dishIds.length + index + 1)%this.dishIds.length]; /* wrap to [0] if at last array index */
   }
 
   goBack(): void {
-    this.location.back();
+	  this.location.back();
   }
+  
+  /* Assignment 3 continued */
+  createForm(): void {
+    this.dishdetailForm = this.fb.group({ /* Fields need not match sequence in feedback.ts but easier to read if done so */
+      author: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(25)]],
+      comment: ['', [Validators.required, Validators.minLength(2)]],
+	  rating: ['5'],
+	  date: ['']
+    });
 
+	this.dishdetailForm.valueChanges
+		.subscribe(data => this.onValueChanged(data));
+		
+	this.onValueChanged(); /*(re)set Form Validation Messages */
+  }
+  
+  onValueChanged(data?: any) {
+	  if (!this.dishdetailForm) { return; }
+	  const form = this.dishdetailForm;
+	  
+	  for (const field in this.formErrors) {
+		  this.formErrors[field] = '';
+		  const control = form.get(field);
+		  if (control && control.dirty && !control.valid) {
+			  const messages = this.validationMessages[field];
+			  for (const key in control.errors) {
+				  this.formErrors[field] += messages[key] + ' ';
+			  }
+		  }
+	  }
+  }
+  
+  onSubmit() {
+    this.comment = this.dishdetailForm.value;
+	/* this.comment.date = (new Date()).toString(); */
+	/* this.comment.date = dateToday.toISOString(); */
+	this.comment.date = new Date().toISOString();
+	/* this.array_copy.comments.push(this.comment); */ /* Refactor for Restangular*/
+	this.dishcopy.comments.push(this.comment);
+	this.dishcopy.save()
+		.subscribe(dish => this.dish = dish);
+	this.dishdetailForm.reset({
+		author: '',
+		comment: '',
+		rating: '5'
+	});
+  }
+  /* End Assignment 3*/
 }
+  
