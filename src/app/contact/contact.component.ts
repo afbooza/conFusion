@@ -3,6 +3,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { flyInOut, visibility, hide, expand } from '../animations/app.animation';
 
 import { Feedback, ContactType } from '../shared/feedback';
+import { FeedbackService } from '../services/feedback.service';
 
 
 @Component({
@@ -25,6 +26,8 @@ export class ContactComponent implements OnInit {
   feedbackForm: FormGroup;
   feedback: Feedback;
   contactType = ContactType;
+  visibilityForm = 'shown';
+  visibilitySpinner = 'hidden';
   formErrors = {
     'firstname':'',
     'lastname':'',
@@ -54,7 +57,8 @@ export class ContactComponent implements OnInit {
   }
 
 
-  constructor(private fb: FormBuilder) { 
+  constructor(private fb: FormBuilder,
+    private feedbackService: FeedbackService) { 
     this.createForm();
   }
 
@@ -96,8 +100,20 @@ export class ContactComponent implements OnInit {
   }
 
   onSubmit() {
-    this.feedback = this.feedbackForm.value;
-    console.log(this.feedback);
+    this.visibilityForm = 'hidden';
+    this.visibilitySpinner = 'shown';
+    this.feedbackService.submitFeedback(this.feedbackForm.value)
+      .subscribe(feedback => {
+		/* Data returned from server - now hide the Spinner */  
+        this.visibilitySpinner = 'hidden';
+        this.feedback = feedback;
+        setTimeout(timeOutFunction=>{
+		  /* Show the Form for 5 seconds*/
+		  this.feedback = null;
+          this.visibilityForm = 'shown';
+          }, 5000);
+      });
+
     this.feedbackForm.reset({
       firstname: '',
       lastname: '',
